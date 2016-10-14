@@ -1,6 +1,6 @@
 # cartpole-q-learning
 
-A cart pole balancing agent powered by Q-Learning ([OpenAI submission](https://gym.openai.com/evaluations/eval_K41KvF0Re6BJW593cq2Tg)).
+A cart pole balancing agent powered by Q-Learning ([OpenAI submission](https://gym.openai.com/evaluations/eval_K41KvF0Re6BJW593cq2Tg)). Uses Python 3 and [OpenAI Gym](https://gym.openai.com/).
 
 ![Screenshot](screenshot.png)
 
@@ -20,4 +20,4 @@ A cart pole balancing agent powered by Q-Learning ([OpenAI submission](https://g
 ### Windows (with Chocolatey)
 
     > choco install ffmpeg
-    > pip3 install -r requirements.txt
+    > pip install -r requirements.txt
