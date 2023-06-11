@@ -65,7 +65,7 @@ class QLearningAgent(Agent):
             self._discretize_range(-2.0, 2.0, num_discretization_bins),
         ]
 
-        # Create a clean Q-Table.
+        # Create a clean Q-Table, where each state is a row and each action is a column.
         self._max_bins = max(len(bin) for bin in self._state_bins)
         self._num_states = (self._max_bins + 1) ** len(self._state_bins)
         self._num_actions = 2
@@ -81,6 +81,7 @@ class QLearningAgent(Agent):
 
     def _build_state_from_observation(self, observation: Observation) -> State:
         # Discretize the observation features and reduce them to a single integer.
+        # The resulting integer value will correspond to the row number in the Q-Table.
         state = sum(
             self._discretize_value(feature, self._state_bins[i]) * ((self._max_bins + 1) ** i)
             for i, feature in enumerate(observation)
