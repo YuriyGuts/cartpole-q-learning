@@ -32,8 +32,6 @@ class RandomActionAgent(Agent):
 class QLearningAgent(Agent):
     """Agent that learns from experience using tabular Q-Learning."""
 
-    # pylint: disable=too-many-instance-attributes
-
     def __init__(
         self,
         learning_rate: float = 0.2,
@@ -42,7 +40,6 @@ class QLearningAgent(Agent):
         exploration_decay_rate: float = 0.99,
         random_state: np.random.RandomState = None,
     ):
-        # pylint: disable=too-many-arguments
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.exploration_rate = exploration_rate
@@ -69,7 +66,7 @@ class QLearningAgent(Agent):
         self._max_bins = max(len(bin) for bin in self._state_bins)
         self._num_states = (self._max_bins + 1) ** len(self._state_bins)
         self._num_actions = 2
-        self.q = np.zeros(shape=(self._num_states, self._num_actions))
+        self._q = np.zeros(shape=(self._num_states, self._num_actions))
 
     @staticmethod
     def _discretize_range(lower_bound: float, upper_bound: float, num_bins: int) -> np.ndarray:
@@ -94,7 +91,7 @@ class QLearningAgent(Agent):
 
         # Get the action for the initial state.
         self.state = self._build_state_from_observation(observation)
-        return np.argmax(self.q[self.state])  # type: ignore
+        return np.argmax(self._q[self.state])  # type: ignore
 
     def act(self, observation: Observation, reward: Reward) -> Action:
         next_state = self._build_state_from_observation(observation)
@@ -104,13 +101,13 @@ class QLearningAgent(Agent):
         if enable_exploration:
             next_action = self.random_state.randint(0, self._num_actions)
         else:
-            next_action = np.argmax(self.q[next_state])
+            next_action = np.argmax(self._q[next_state])
 
         # Learn: update Q-Table based on current reward and future action.
-        self.q[self.state, self.action] += self.learning_rate * (
+        self._q[self.state, self.action] += self.learning_rate * (
             reward
-            + self.discount_factor * max(self.q[next_state, :])
-            - self.q[self.state, self.action]
+            + self.discount_factor * max(self._q[next_state, :])
+            - self._q[self.state, self.action]
         )
 
         self.state = next_state

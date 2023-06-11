@@ -22,6 +22,7 @@ repos:
           [
             "-rn", # Only display messages
             "--disable=C", # Ignore convention errors
+            "--disable=R", # Ignore refactoring errors
             "--extension-pkg-whitelist=numpy", # Ignore errors for numpy
           ]
   - repo: "https://github.com/pre-commit/mirrors-mypy"
