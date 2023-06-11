@@ -1,0 +1,32 @@
+repos:
+  - repo: "https://github.com/pre-commit/pre-commit-hooks"
+    rev: v2.3.0
+    hooks: []
+  - repo: "https://github.com/psf/black"
+    rev: 22.10.0
+    hooks:
+      - id: black
+  - repo: "https://github.com/pycqa/isort"
+    rev: 5.11.5
+    hooks:
+      - id: isort
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types:
+          - python
+        args:
+          [
+            "-rn", # Only display messages
+            "--disable=C", # Ignore convention errors
+            "--disable=R", # Ignore refactoring errors
+            "--extension-pkg-whitelist=numpy", # Ignore errors for numpy
+          ]
+  - repo: "https://github.com/pre-commit/mirrors-mypy"
+    rev: ''  # Use the sha / tag you want to point at
+    hooks:
+    - id: mypy
+      args: [--strict, --ignore-missing-imports]

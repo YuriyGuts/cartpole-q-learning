@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "cartpole-q-learning"
+version = "0.2.0"
+description = "A cart pole balancing agent powered by Q-Learning"
+authors = ["Yuriy Guts <yuriy.guts@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "cartpole_q_learning"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.24.3"
+pandas = "^2.0.2"
+matplotlib = "^3.7.1"
+gymnasium = {extras = ["classic-control"], version = "^0.28.1"}
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.3.2"
+pylint = "^2.17.4"
+pytest = "^7.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+line_length = 100
+
+[tool.black]
+line-length = 100
