@@ -1,13 +1,13 @@
 import pathlib
 import sys
+from dataclasses import asdict
 
 import gymnasium as gym
 import numpy as np
 import pandas as pd
 
 from cartpole.agents import Agent, QLearningAgent
-from cartpole.entities import Action, EpisodeHistory, Observation, Reward
-from cartpole.plotting import EpisodeHistoryMatplotlibPlotter
+from cartpole.entities import Action, EpisodeHistory, EpisodeHistoryRecord, Observation, Reward
 
 
 def run_agent(agent: Agent, env: gym.Env, verbose: bool = False) -> EpisodeHistory:
@@ -24,17 +24,19 @@ def run_agent(agent: Agent, env: gym.Env, verbose: bool = False) -> EpisodeHisto
     goal_consecutive_episodes = 100
 
     episode_history = EpisodeHistory(
-        capacity=max_episodes_to_run,
         max_timesteps_per_episode=200,
         goal_avg_episode_length=goal_avg_episode_length,
         goal_consecutive_episodes=goal_consecutive_episodes,
     )
-    episode_history_plotter = EpisodeHistoryMatplotlibPlotter(
-        history=episode_history,
-        plot_episode_count=200,  # How many recent episodes to fit on a single plot.
-    )
+    episode_history_plotter = None
 
     if verbose:
+        from cartpole.plotting import EpisodeHistoryMatplotlibPlotter
+
+        episode_history_plotter = EpisodeHistoryMatplotlibPlotter(
+            history=episode_history,
+            visible_episode_count=200,  # How many most recent episodes to fit on a single plot.
+        )
         episode_history_plotter.create_plot()
 
     # Main simulation/learning loop.
@@ -53,30 +55,38 @@ def run_agent(agent: Agent, env: gym.Env, verbose: bool = False) -> EpisodeHisto
                     log_timestep(timestep_index, action, reward, observation)
 
                 # If the episode has ended prematurely, penalize the agent.
-                if terminated and timestep_index < max_timesteps_per_episode - 1:
+                is_successful = timestep_index >= max_timesteps_per_episode - 1
+                if terminated and not is_successful:
                     reward = -max_episodes_to_run
 
                 # Get the next action from the learner, given our new state.
                 action = agent.act(observation, reward)
 
                 # Record this episode to the history and check if the goal has been reached.
-                if terminated or timestep_index == max_timesteps_per_episode - 1:
+                if terminated or is_successful:
                     print(
-                        f"Episode {episode_index + 1} "
+                        f"Episode {episode_index} "
                         f"finished after {timestep_index + 1} timesteps."
                     )
 
-                    episode_history[episode_index] = timestep_index + 1
-                    if verbose:
-                        episode_history_plotter.update_plot(episode_index)
+                    episode_history.record_episode(
+                        EpisodeHistoryRecord(
+                            episode_index=episode_index,
+                            episode_length=timestep_index + 1,
+                            is_successful=is_successful,
+                        )
+                    )
+                    if verbose and episode_history_plotter:
+                        episode_history_plotter.update_plot()
 
-                    if episode_history.is_goal_reached(episode_index):
+                    if episode_history.is_goal_reached():
                         print(f"SUCCESS: Goal reached after {episode_index + 1} episodes!")
                         return episode_history
 
                     break
 
         print(f"FAILURE: Goal not reached after {max_episodes_to_run} episodes.")
+
     except KeyboardInterrupt:
         print("WARNING: Terminated by user request.")
 
@@ -121,8 +131,9 @@ def save_history(history: EpisodeHistory, experiment_dir: str) -> pathlib.Path:
     experiment_dir_path.mkdir(parents=True, exist_ok=True)
 
     file_path = experiment_dir_path / "episode_history.csv"
-    dataframe = pd.DataFrame(history.episode_lengths, columns=["length"])
-    dataframe.to_csv(file_path, header=True, index_label="episode")
+    record_dicts = (asdict(record) for record in history.all_records())
+    dataframe = pd.DataFrame.from_records(record_dicts, index="episode_index")
+    dataframe.to_csv(file_path, header=True)
     print(f"Episode history saved to {file_path}")
     return file_path
 
