@@ -35,7 +35,7 @@ class EpisodeHistoryMatplotlibPlotter:
         (self.mean_plot,) = plt.plot([], [], linewidth=3.0, c="#df3930")
 
     def update_plot(self, episode_index: int) -> None:
-        plot_right_edge = episode_index
+        plot_right_edge = episode_index + 1
         plot_left_edge = max(0, plot_right_edge - self.plot_episode_count)
 
         # Update point plot.
