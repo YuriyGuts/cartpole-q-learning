@@ -27,10 +27,10 @@ class EpisodeHistory:
     def __setitem__(self, episode_index: int, episode_length: int) -> None:
         self.episode_lengths[episode_index] = episode_length
 
-    def is_goal_reached(self, episode_index: int) -> bool:
-        avg = np.average(
-            self.episode_lengths[
-                episode_index - self.goal_consecutive_episodes + 1 : episode_index + 1
-            ]
-        )
-        return bool(avg >= self.goal_avg_episode_length)
+    def is_goal_reached(self, at_episode_index: int) -> bool:
+        lengths_slice = self.episode_lengths[
+            max(0, at_episode_index - self.goal_consecutive_episodes + 1) : at_episode_index + 1
+        ]
+        if len(lengths_slice) == 0:
+            lengths_slice = np.array([0])
+        return bool(np.average(lengths_slice) >= self.goal_avg_episode_length)
