@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -26,7 +25,7 @@ class EpisodeHistory:
         goal_avg_episode_length: int = 195,
         goal_consecutive_episodes: int = 100,
     ) -> None:
-        self._records: List[EpisodeHistoryRecord] = []
+        self._records: list[EpisodeHistoryRecord] = []
         self.max_timesteps_per_episode = max_timesteps_per_episode
         self.goal_avg_episode_length = goal_avg_episode_length
         self.goal_consecutive_episodes = goal_consecutive_episodes
@@ -37,7 +36,7 @@ class EpisodeHistory:
     def __getitem__(self, episode_index: int) -> EpisodeHistoryRecord:
         return self._records[episode_index]
 
-    def all_records(self) -> List[EpisodeHistoryRecord]:
+    def all_records(self) -> list[EpisodeHistoryRecord]:
         return list(self._records[:])
 
     @property

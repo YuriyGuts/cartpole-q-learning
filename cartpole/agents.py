@@ -1,9 +1,10 @@
 import abc
-from typing import Optional
 
 import numpy as np
 
 from cartpole.entities import Action, Observation, Reward, State
+
+RandomStateType = np.random.RandomState | np.random.Generator
 
 
 class Agent(abc.ABC):
@@ -19,14 +20,14 @@ class Agent(abc.ABC):
 class RandomActionAgent(Agent):
     """Agent that has no learning behavior and acts randomly at all times."""
 
-    def __init__(self, random_state: np.random.RandomState = None):
-        self.random_state = random_state or np.random
+    def __init__(self, random_state: RandomStateType | None = None):
+        self.random_state: RandomStateType = random_state or np.random.default_rng()
 
     def begin_episode(self, observation: Observation) -> Action:
-        return self.random_state.choice([0, 1])  # type: ignore
+        return int(self.random_state.choice([0, 1]))
 
     def act(self, observation: Observation, reward: Reward) -> Action:
-        return self.random_state.choice([0, 1])  # type: ignore
+        return int(self.random_state.choice([0, 1]))
 
 
 class QLearningAgent(Agent):
@@ -38,16 +39,16 @@ class QLearningAgent(Agent):
         discount_factor: float = 1.0,
         exploration_rate: float = 0.5,
         exploration_decay_rate: float = 0.99,
-        random_state: np.random.RandomState = None,
+        random_state: RandomStateType | None = None,
     ):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.exploration_rate = exploration_rate
         self.exploration_decay_rate = exploration_decay_rate
-        self.random_state = random_state or np.random
+        self.random_state: RandomStateType = random_state or np.random.default_rng()
 
-        self.state: Optional[State] = None
-        self.action: Optional[Action] = None
+        self.state: State | None = None
+        self.action: Action | None = None
 
         # Discretize the continuous state space for each of the 4 features.
         num_discretization_bins = 7
@@ -73,8 +74,8 @@ class QLearningAgent(Agent):
         return np.linspace(lower_bound, upper_bound, num_bins + 1)[1:-1]
 
     @staticmethod
-    def _discretize_value(value: float, bins: np.ndarray) -> np.ndarray:
-        return np.digitize(x=value, bins=bins)
+    def _discretize_value(value: float, bins: np.ndarray) -> int:
+        return int(np.digitize(x=value, bins=bins))
 
     def _build_state_from_observation(self, observation: Observation) -> State:
         # Discretize the observation features and reduce them to a single integer.
@@ -83,7 +84,7 @@ class QLearningAgent(Agent):
             self._discretize_value(feature, self._state_bins[i]) * ((self._max_bins + 1) ** i)
             for i, feature in enumerate(observation)
         )
-        return state  # type: ignore
+        return state
 
     def begin_episode(self, observation: Observation) -> Action:
         # Reduce exploration over time.
@@ -91,7 +92,7 @@ class QLearningAgent(Agent):
 
         # Get the action for the initial state.
         self.state = self._build_state_from_observation(observation)
-        return np.argmax(self._q[self.state])  # type: ignore
+        return int(np.argmax(self._q[self.state]))
 
     def act(self, observation: Observation, reward: Reward) -> Action:
         next_state = self._build_state_from_observation(observation)
@@ -99,9 +100,9 @@ class QLearningAgent(Agent):
         # Exploration/exploitation: choose a random action or select the best one.
         enable_exploration = (1 - self.exploration_rate) <= self.random_state.uniform(0, 1)
         if enable_exploration:
-            next_action = self.random_state.randint(0, self._num_actions)
+            next_action = int(self.random_state.integers(0, self._num_actions))
         else:
-            next_action = np.argmax(self._q[next_state])
+            next_action = int(np.argmax(self._q[next_state]))
 
         # Learn: update Q-Table based on current reward and future action.
         self._q[self.state, self.action] += self.learning_rate * (
@@ -112,4 +113,4 @@ class QLearningAgent(Agent):
 
         self.state = next_state
         self.action = next_action
-        return next_action  # type: ignore
+        return next_action

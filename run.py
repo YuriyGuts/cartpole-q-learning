@@ -48,7 +48,8 @@ def run_agent(agent: Agent, env: gym.Env, verbose: bool = False) -> EpisodeHisto
 
             for timestep_index in range(max_timesteps_per_episode):
                 # Perform the action and observe the new state.
-                observation, reward, terminated, _, _ = env.step(action)
+                observation, step_reward, terminated, _, _ = env.step(action)
+                reward: Reward = float(step_reward)
 
                 # Log the current state.
                 if verbose:
@@ -57,7 +58,7 @@ def run_agent(agent: Agent, env: gym.Env, verbose: bool = False) -> EpisodeHisto
                 # If the episode has ended prematurely, penalize the agent.
                 is_successful = timestep_index >= max_timesteps_per_episode - 1
                 if terminated and not is_successful:
-                    reward = -max_episodes_to_run
+                    reward = float(-max_episodes_to_run)
 
                 # Get the next action from the learner, given our new state.
                 action = agent.act(observation, reward)
@@ -140,7 +141,7 @@ def save_history(history: EpisodeHistory, experiment_dir: str) -> pathlib.Path:
 
 def main() -> None:
     verbose = len(sys.argv) > 1 and sys.argv[1] == "--verbose"
-    random_state = np.random.RandomState(seed=0)
+    random_state = np.random.default_rng(seed=0)
 
     env = gym.make("CartPole-v1", render_mode="human" if verbose else None)
     agent = QLearningAgent(

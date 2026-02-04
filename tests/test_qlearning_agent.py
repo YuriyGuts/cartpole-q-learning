@@ -14,7 +14,7 @@ def agent():
         discount_factor=0.95,
         exploration_rate=0.5,
         exploration_decay_rate=0.99,
-        random_state=np.random.RandomState(seed=42),
+        random_state=np.random.default_rng(seed=42),
     )
 
 
@@ -30,7 +30,7 @@ def test_agent_responds_to_episode_reset(agent, observation):
 
 def test_agent_responds_to_timestep(agent, observation):
     action = agent.act(observation=observation, reward=0)
-    assert action == 0
+    assert action == 1
 
 
 def test_qtable_setup(agent):

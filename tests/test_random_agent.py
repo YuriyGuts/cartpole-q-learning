@@ -9,7 +9,7 @@ from cartpole.agents import RandomActionAgent
 
 @pytest.fixture
 def agent():
-    return RandomActionAgent(random_state=np.random.RandomState(seed=42))
+    return RandomActionAgent(random_state=np.random.default_rng(seed=42))
 
 
 @pytest.fixture
